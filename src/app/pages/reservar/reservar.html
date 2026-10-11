@@ -1,0 +1,96 @@
+<section class="book">
+  <header class="book__head">
+    <h1>Reservar cita</h1>
+    <ol class="book__steps" aria-label="Progreso">
+      @for (l of labels; track l; let i = $index) {
+        <li [class.is-done]="i < step() || confirmed()" [class.is-current]="i === step() && !confirmed()">
+          <span>{{ i + 1 }}</span> {{ l }}
+        </li>
+      }
+    </ol>
+  </header>
+
+  <div class="book__grid">
+    <div class="book__panel">
+      @if (confirmed()) {
+        <div class="done" role="status">
+          <span class="done__icon"><app-icon name="check" [size]="32" /></span>
+          <h2>Cita confirmada</h2>
+          <p>{{ service()?.name }} con {{ barber()?.name }}, el {{ days[dayIndex()!].long }} a las {{ time() }}.</p>
+          <p class="muted">Esto es una demostración visual: la cita aún no se guarda.</p>
+          <a routerLink="/" class="btn btn--ink">Volver al inicio</a>
+        </div>
+      } @else {
+        @switch (step()) {
+          @case (0) {
+            <h2>Elige tu servicio</h2>
+            <div class="options">
+              @for (s of services; track s.id) {
+                <button type="button" class="opt" [class.is-selected]="service()?.id === s.id" (click)="serviceId.set(s.id)">
+                  <strong>{{ s.name }}</strong>
+                  <span>{{ s.minutes }} min · {{ fmt(s.price) }}</span>
+                </button>
+              }
+            </div>
+          }
+          @case (1) {
+            <h2>Elige tu barbero</h2>
+            <div class="options">
+              @for (b of barbers; track b.id) {
+                <button type="button" class="opt" [class.is-selected]="barber()?.id === b.id" (click)="barberId.set(b.id)">
+                  <strong>{{ b.name }}</strong>
+                  <span>{{ b.specialty }}</span>
+                </button>
+              }
+            </div>
+          }
+          @case (2) {
+            <h2>Día y hora</h2>
+            <div class="days">
+              @for (d of days; track d.num; let i = $index) {
+                <button type="button" class="day" [class.is-selected]="dayIndex() === i" (click)="dayIndex.set(i)">
+                  <span>{{ d.short }}</span><strong>{{ d.num }}</strong>
+                </button>
+              }
+            </div>
+            <div class="times">
+              @for (t of times; track t) {
+                <button type="button" class="time" [class.is-selected]="time() === t" (click)="time.set(t)">{{ t }}</button>
+              }
+            </div>
+          }
+          @case (3) {
+            <h2>Tus datos</h2>
+            <form [formGroup]="form" (ngSubmit)="confirm()" class="form" novalidate>
+              <label>Nombre
+                <input type="text" formControlName="name" autocomplete="name">
+                @if (form.controls.name.touched && form.controls.name.invalid) { <small class="err">Escribe tu nombre.</small> }
+              </label>
+              <label>Teléfono
+                <input type="tel" formControlName="phone" autocomplete="tel">
+                @if (form.controls.phone.touched && form.controls.phone.invalid) { <small class="err">Escribe un teléfono de al menos 7 dígitos.</small> }
+              </label>
+              <button type="submit" class="btn btn--wine">Confirmar cita</button>
+            </form>
+          }
+        }
+        <div class="book__nav">
+          @if (step() > 0) { <button type="button" class="btn btn--line" (click)="back()">Atrás</button> }
+          @if (step() < 3) {
+            <button type="button" class="btn btn--ink" [disabled]="!canNext()" (click)="next()">Continuar <app-icon name="arrow-right" [size]="18" /></button>
+          }
+        </div>
+      }
+    </div>
+
+    <aside class="summary" aria-label="Resumen">
+      <h2>Resumen</h2>
+      <dl>
+        <dt>Servicio</dt><dd>{{ service()?.name ?? 'Sin elegir' }}</dd>
+        <dt>Barbero</dt><dd>{{ barber()?.name ?? 'Sin elegir' }}</dd>
+        <dt>Horario</dt><dd>{{ dayIndex() !== null && time() ? days[dayIndex()!].long + ', ' + time() : 'Sin elegir' }}</dd>
+      </dl>
+      @if (service(); as s) { <p class="summary__total">{{ fmt(s.price) }}</p> }
+    </aside>
+  </div>
+</section>

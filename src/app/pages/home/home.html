@@ -1,0 +1,111 @@
+<!-- HERO -->
+<section class="hero" id="inicio">
+  <h1 class="hero__title">
+    <span class="line"><span>Tu estilo.</span></span>
+    <span class="line line--2"><span>Tu regla.</span></span>
+  </h1>
+
+  <div class="hero__art">
+    <app-photo class="hero__photo" label="Foto editorial · degradado contemporáneo" tone="sand" />
+    <span class="hero__tag">Edición 2026</span>
+    <svg class="stamp" viewBox="0 0 100 100" role="img" aria-label="Corte, barba, estilo, precisión">
+      <circle cx="50" cy="50" r="50" fill="var(--blue)" />
+      <path id="stampPath" d="M50,50 m-33,0 a33,33 0 1,1 66,0 a33,33 0 1,1 -66,0" fill="none" />
+      <text fill="var(--ivory)" font-size="9.4" font-weight="700" letter-spacing="1.6">
+        <textPath href="#stampPath">Corte · Barba · Estilo · Precisión ·</textPath>
+      </text>
+      <path d="M38 62 62 38" stroke="var(--ivory)" stroke-width="4" />
+    </svg>
+  </div>
+
+  <div class="hero__copy">
+    <p>Cortes con criterio y barba con carácter. Elige a tu barbero, reserva en un minuto y llega a una silla que ya te está esperando.</p>
+    <div class="hero__actions">
+      <a routerLink="/reservar" class="btn btn--ink">Reservar cita <app-icon name="arrow-right" [size]="18" /></a>
+      <a routerLink="/" fragment="servicios" class="btn btn--line">Ver servicios</a>
+    </div>
+  </div>
+
+  <a class="scroll" routerLink="/" fragment="servicios" aria-label="Desplazar a servicios">
+    <span class="scroll__line"></span><app-icon name="arrow-down" [size]="18" />
+  </a>
+</section>
+
+<!-- SERVICIOS -->
+<section class="section services" id="servicios">
+  <header class="section__head">
+    <h2>Servicios</h2>
+    <p>Precios y duraciones de demostración.</p>
+  </header>
+
+  <ul class="svc-list">
+    @for (s of services; track s.id; let i = $index) {
+      <li class="svc" [class.is-active]="active() === s.id">
+        <button type="button" class="svc__head" (click)="active.set(s.id)"
+          [attr.aria-expanded]="active() === s.id" [attr.aria-controls]="'svc-' + s.id">
+          <span class="svc__idx">{{ '0' + (i + 1) }}</span>
+          <span class="svc__name">{{ s.name }}</span>
+          <span class="svc__price">{{ fmt(s.price) }}</span>
+          <span class="svc__plus"><app-icon name="plus" [size]="22" /></span>
+        </button>
+        <div class="svc__body" [id]="'svc-' + s.id">
+          <div>
+            <p>{{ s.description }}</p>
+            <div class="svc__meta">
+              <span><app-icon name="clock" [size]="16" /> {{ s.minutes }} min</span>
+              <a routerLink="/reservar" [queryParams]="{ servicio: s.id }" class="btn btn--wine">Reservar este servicio</a>
+            </div>
+          </div>
+        </div>
+      </li>
+    }
+  </ul>
+</section>
+
+<!-- BARBEROS -->
+<section class="section barbers" id="barberos">
+  <header class="section__head">
+    <h2>Los barberos</h2>
+    <p>Elige a quien va a tener la navaja en la mano.</p>
+  </header>
+
+  <div class="barber-row">
+    @for (b of barbers; track b.id; let i = $index) {
+      <article class="barber barber--{{ i + 1 }}">
+        <app-photo class="barber__photo" [label]="b.photoLabel" [tone]="i === 1 ? 'wine' : i === 2 ? 'blue' : 'sand'" />
+        <span class="barber__tag">{{ b.specialty }}</span>
+        <h3>{{ b.name }}</h3>
+        <p>{{ b.bio }}</p>
+        <a routerLink="/reservar" [queryParams]="{ barbero: b.id }" class="link">
+          Reservar con {{ b.name.split(' ')[0] }} <app-icon name="arrow-up-right" [size]="18" />
+        </a>
+      </article>
+    }
+  </div>
+</section>
+
+<!-- EXPERIENCIA -->
+<section class="section experience" id="experiencia">
+  <header class="section__head">
+    <h2>Reservar es parte del servicio</h2>
+    <p>Cuatro pasos, sin llamadas ni esperas.</p>
+  </header>
+  <ol class="steps">
+    @for (s of steps; track s.n) {
+      <li class="step">
+        <span class="step__n">{{ s.n }}</span>
+        <h3>{{ s.t }}</h3>
+        <p>{{ s.d }}</p>
+      </li>
+    }
+  </ol>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>Tu silla<br>está libre.</h2>
+  <div>
+    <p>Elige servicio, barbero y hora. Tarda menos que una espera en la puerta.</p>
+    <a routerLink="/reservar" class="btn btn--ivory">Reservar cita <app-icon name="arrow-right" [size]="18" /></a>
+  </div>
+</section>
