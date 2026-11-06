@@ -13,6 +13,11 @@ app.use(express.json());
 
 // 1. CONEXIÓN A MONGOOSE
 const MONGO_URI = process.env.MONGO_URI;
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!MONGO_URI || !JWT_SECRET) {
+    console.error('❌ Configura MONGO_URI y JWT_SECRET en el archivo .env.');
+    process.exit(1);
+}
 mongoose.connect(MONGO_URI)
     .then(() => console.log('🚀 ¡Conexión exitosa a MongoDB Atlas!'))
     .catch((error) => console.error('❌ Error al conectar a MongoDB:', error));
@@ -70,7 +75,7 @@ app.post('/api/auth/login', async (req, res) => {
         if (!passwordValido) return res.status(401).json({ error: 'Contraseña incorrecta' });
 
         // Crear token de sesión seguro
-        const token = jwt.sign({ id: usuario._id }, 'SECRETO_SUPER_SEGURO', { expiresIn: '24h' });
+        const token = jwt.sign({ id: usuario._id }, JWT_SECRET, { expiresIn: '24h' });
         res.json({ token, usuario: { nombre: usuario.nombre, email: usuario.email } });
     } catch (error) {
         res.status(500).json({ error: 'Error en el servidor' });
@@ -89,7 +94,22 @@ app.post('/api/citas/agendar', async (req, res) => {
     }
 });
 
-// D. RUTA: VER TODAS LAS CITAS (Para el administrador o barberos)
+// D. RUTA: CONSULTAR HORAS OCUPADAS sin exponer los datos de los clientes
+app.get('/api/citas/disponibilidad', async (req, res) => {
+    const { fecha, barbero } = req.query;
+    if (typeof fecha !== 'string' || typeof barbero !== 'string') {
+        return res.status(400).json({ error: 'Indica una fecha y un barbero válidos' });
+    }
+
+    try {
+        const citas = await Cita.find({ fecha, barbero }).select('hora -_id').lean();
+        res.json({ horariosOcupados: citas.map((cita) => cita.hora) });
+    } catch (error) {
+        res.status(500).json({ error: 'Error al consultar la disponibilidad' });
+    }
+});
+
+// E. RUTA: VER TODAS LAS CITAS (Para el administrador o barberos)
 app.get('/api/citas', async (req, res) => {
     try {
         const citas = await Cita.find();

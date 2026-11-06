@@ -17,7 +17,7 @@
           <span class="done__icon"><app-icon name="check" [size]="32" /></span>
           <h2>Cita confirmada</h2>
           <p>{{ service()?.name }} con {{ barber()?.name }}, el {{ days[dayIndex()!].long }} a las {{ time() }}.</p>
-          <p class="muted">Esto es una demostración visual: la cita aún no se guarda.</p>
+          <p class="muted">Tu cita quedó registrada correctamente.</p>
           <a routerLink="/" class="btn btn--ink">Volver al inicio</a>
         </div>
       } @else {
@@ -37,7 +37,7 @@
             <h2>Elige tu barbero</h2>
             <div class="options">
               @for (b of barbers; track b.id) {
-                <button type="button" class="opt" [class.is-selected]="barber()?.id === b.id" (click)="barberId.set(b.id)">
+                <button type="button" class="opt" [class.is-selected]="barber()?.id === b.id" (click)="selectBarber(b.id)">
                   <strong>{{ b.name }}</strong>
                   <span>{{ b.specialty }}</span>
                 </button>
@@ -46,16 +46,23 @@
           }
           @case (2) {
             <h2>Día y hora</h2>
+            @if (loadingAppointments()) { <p class="muted" role="status">Cargando disponibilidad…</p> }
+            @if (appointmentsError()) {
+              <p class="err" role="alert">{{ appointmentsError() }}</p>
+              <button type="button" class="btn btn--line" (click)="loadAvailability()">Reintentar</button>
+            }
             <div class="days">
               @for (d of days; track d.num; let i = $index) {
-                <button type="button" class="day" [class.is-selected]="dayIndex() === i" (click)="dayIndex.set(i)">
+                <button type="button" class="day" [class.is-selected]="dayIndex() === i" (click)="selectDay(i)">
                   <span>{{ d.short }}</span><strong>{{ d.num }}</strong>
                 </button>
               }
             </div>
             <div class="times">
               @for (t of times; track t) {
-                <button type="button" class="time" [class.is-selected]="time() === t" (click)="time.set(t)">{{ t }}</button>
+                <button type="button" class="time" [class.is-selected]="time() === t" [disabled]="!isTimeAvailable(t) || loadingAppointments() || !!appointmentsError()" (click)="time.set(t)">
+                  {{ t }}{{ isTimeOccupied(t) ? ' · Ocupado' : '' }}
+                </button>
               }
             </div>
           }
@@ -66,11 +73,8 @@
                 <input type="text" formControlName="name" autocomplete="name">
                 @if (form.controls.name.touched && form.controls.name.invalid) { <small class="err">Escribe tu nombre.</small> }
               </label>
-              <label>Teléfono
-                <input type="tel" formControlName="phone" autocomplete="tel">
-                @if (form.controls.phone.touched && form.controls.phone.invalid) { <small class="err">Escribe un teléfono de al menos 7 dígitos.</small> }
-              </label>
-              <button type="submit" class="btn btn--wine">Confirmar cita</button>
+              @if (bookingError()) { <p class="err" role="alert">{{ bookingError() }}</p> }
+              <button type="submit" class="btn btn--wine" [disabled]="submitting()">{{ submitting() ? 'Guardando…' : 'Confirmar cita' }}</button>
             </form>
           }
         }
