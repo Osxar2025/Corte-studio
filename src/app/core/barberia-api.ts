@@ -44,6 +44,12 @@ export class BarberiaApi {
     });
   }
 
+  deleteAppointment(id: string): Observable<{ mensaje: string }> {
+    return this.http.delete<{ mensaje: string }>(`${API_BASE_URL}/citas/${encodeURIComponent(id)}`, {
+      headers: { Authorization: `Bearer ${sessionStorage.getItem('barberia_token') ?? ''}` }
+    });
+  }
+
   getAvailability(date: string, barber: string): Observable<{ horariosOcupados: string[] }> {
     return this.http.get<{ horariosOcupados: string[] }>(`${API_BASE_URL}/citas/disponibilidad`, {
       params: { fecha: date, barbero: barber }

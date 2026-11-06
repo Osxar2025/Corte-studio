@@ -71,14 +71,20 @@
                   </span>
                 </td>
                 <td class="admin-row-action">
-                  <button class="admin-mark" type="button" (click)="setAppointmentStatus(appointment)"
-                    [disabled]="updatingId() === appointment._id">
-                    @if (updatingId() === appointment._id) {
-                      Guardando…
-                    } @else {
-                      {{ appointment.estado === 'realizada' ? 'Deshacer' : 'Marcar realizada' }}
-                    }
-                  </button>
+                  <div class="admin-row-buttons">
+                    <button class="admin-mark" type="button" (click)="setAppointmentStatus(appointment)"
+                      [disabled]="updatingId() === appointment._id || deletingId() === appointment._id">
+                      @if (updatingId() === appointment._id) {
+                        Guardando…
+                      } @else {
+                        {{ appointment.estado === 'realizada' ? 'Deshacer' : 'Marcar realizada' }}
+                      }
+                    </button>
+                    <button class="admin-delete" type="button" (click)="deleteAppointment(appointment)"
+                      [disabled]="updatingId() === appointment._id || deletingId() === appointment._id">
+                      {{ deletingId() === appointment._id ? 'Eliminando…' : 'Eliminar' }}
+                    </button>
+                  </div>
                 </td>
               </tr>
             }

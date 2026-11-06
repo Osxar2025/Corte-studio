@@ -16,6 +16,7 @@ export class Admin implements OnInit {
   loading = signal(false);
   error = signal('');
   updatingId = signal<string | null>(null);
+  deletingId = signal<string | null>(null);
   completedCount = computed(() => this.appointments().filter(cita => cita.estado === 'realizada').length);
   barberCounts = computed(() => DEMO_BARBERS.map(barber => ({
     name: barber.name,
@@ -52,6 +53,27 @@ export class Admin implements OnInit {
       error: error => {
         this.handleError(error);
         this.updatingId.set(null);
+      }
+    });
+  }
+
+  deleteAppointment(appointment: AdminAppointment) {
+    if (!window.confirm(`¿Eliminar la cita de ${appointment.clienteNombre} del ${this.formatDate(appointment.fecha)} a las ${appointment.hora}? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+
+    this.deletingId.set(appointment._id);
+    this.error.set('');
+    this.api.deleteAppointment(appointment._id).subscribe({
+      next: () => {
+        this.appointments.update(appointments =>
+          appointments.filter(item => item._id !== appointment._id)
+        );
+        this.deletingId.set(null);
+      },
+      error: error => {
+        this.handleError(error);
+        this.deletingId.set(null);
       }
     });
   }

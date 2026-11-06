@@ -239,8 +239,12 @@ app-photo { display: block; }
 .admin-time { display: block; color: color-mix(in srgb, var(--ivory) 65%, var(--blue)); }
 .admin-status { display: inline-block; padding: .25rem .65rem; border: 1px solid color-mix(in srgb, var(--ivory) 35%, transparent); border-radius: var(--r-pill); font-size: .8rem; }
 .admin-status--done { color: var(--ink); background: var(--blue); border-color: var(--blue); }
-.admin-mark { color: var(--blue); font-size: .85rem; font-weight: 700; text-decoration: underline; text-underline-offset: .2em; white-space: nowrap; }
+.admin-row-buttons { display: flex; align-items: center; gap: .75rem; }
+.admin-mark, .admin-delete { font-size: .85rem; font-weight: 700; text-decoration: underline; text-underline-offset: .2em; white-space: nowrap; }
+.admin-mark { color: var(--blue); }
+.admin-delete { color: #E8A18D; }
 .admin-mark:disabled { opacity: .5; cursor: wait; }
+.admin-delete:disabled { opacity: .5; cursor: wait; }
 .admin-error { margin-bottom: 1.5rem; padding: 1rem; color: #E8A18D; border: 1px solid currentColor; }
 .admin-message { padding: 2rem 0; color: color-mix(in srgb, var(--ivory) 70%, var(--blue)); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
@@ -255,6 +259,7 @@ app-photo { display: block; }
   .admin-table td { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .45rem 0; border: 0; text-align: right; }
   .admin-table td::before { content: attr(data-label); color: var(--blue); font-size: .75rem; font-weight: 700; text-transform: uppercase; }
   .admin-row-action { justify-content: flex-end !important; }
+  .admin-row-buttons { flex-wrap: wrap; justify-content: flex-end; gap: .5rem .75rem; }
   .admin-row-action::before { content: none !important; }
   .admin-actions .btn { padding: .75rem 1rem; font-size: .9rem; }
 }

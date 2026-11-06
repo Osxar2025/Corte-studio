@@ -265,6 +265,21 @@ app.patch('/api/citas/:id/estado', requireAdmin, async (req, res) => {
     }
 });
 
+app.delete('/api/citas/:id', requireAdmin, async (req, res) => {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({ error: 'El identificador de la cita no es válido' });
+    }
+
+    try {
+        const cita = await Cita.findByIdAndDelete(req.params.id).lean();
+        if (!cita) return res.status(404).json({ error: 'No se encontró la cita' });
+        res.json({ mensaje: 'La cita se eliminó correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar la cita:', error.name, error.code || 'sin código');
+        res.status(500).json({ error: 'No se pudo eliminar la cita' });
+    }
+});
+
 
 // 4. PUERTO DINÁMICO PARA RENDER
 const PORT = process.env.PORT || 3000;
