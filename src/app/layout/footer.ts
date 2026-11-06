@@ -14,6 +14,8 @@ import { Logo } from '../shared/logo';
         <a routerLink="/" fragment="barberos">Barberos</a>
         <a routerLink="/reservar">Reservar cita</a>
         <a routerLink="/ingresar">Ingresar</a>
+        <a href="https://maps.app.goo.gl/ojaK2uwAVsVWpfg48"
+          target="_blank" rel="noopener noreferrer">Cómo llegar en Google Maps ↗</a>
       </nav>
       <p>© {{ b.year }} {{ b.name }}. {{ b.city }}. Contenido de demostración.</p>
     </footer>`
