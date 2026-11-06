@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BarberiaApi } from '../../core/barberia-api';
 
@@ -40,6 +40,7 @@ import { BarberiaApi } from '../../core/barberia-api';
 export class Ingresar {
   private fb = inject(FormBuilder);
   private api = inject(BarberiaApi);
+  private router = inject(Router);
   registering = signal(false);
   loading = signal(false);
   error = signal('');
@@ -85,8 +86,12 @@ export class Ingresar {
     this.api.login(email, password).subscribe({
       next: response => {
         sessionStorage.setItem('barberia_token', response.token);
-        this.message.set(`Bienvenido, ${response.usuario.nombre}. Sesión iniciada.`);
         this.loading.set(false);
+        if (response.usuario.esAdministrador) {
+          this.router.navigateByUrl('/admin');
+          return;
+        }
+        this.message.set(`Bienvenido, ${response.usuario.nombre}. Sesión iniciada.`);
       },
       error: error => this.handleError(error)
     });

@@ -15,6 +15,12 @@ app.use(express.json());
 // 1. CONEXIÓN A MONGOOSE
 const MONGO_URI = process.env.MONGO_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
+const ADMIN_EMAILS = new Set(
+    (process.env.ADMIN_EMAILS || '')
+        .split(',')
+        .map(email => email.trim().toLowerCase())
+        .filter(Boolean)
+);
 if (!MONGO_URI || !JWT_SECRET) {
     console.error('❌ Configura MONGO_URI y JWT_SECRET en el archivo .env.');
     process.exit(1);
@@ -27,12 +33,45 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
+async function requireAdmin(req, res, next) {
+    if (ADMIN_EMAILS.size === 0) {
+        return res.status(503).json({ error: 'La administración no está configurada en el servidor' });
+    }
+
+    const authorization = req.get('authorization');
+    const token = authorization?.startsWith('Bearer ') ? authorization.slice(7) : '';
+    if (!token) {
+        return res.status(401).json({ error: 'Inicia sesión con una cuenta administradora' });
+    }
+
+    try {
+        const payload = jwt.verify(token, JWT_SECRET);
+        const usuario = typeof payload === 'object' && payload.id
+            ? await User.findById(payload.id).select('email').lean()
+            : null;
+        if (!usuario) {
+            return res.status(401).json({ error: 'La sesión ya no es válida' });
+        }
+        if (!ADMIN_EMAILS.has(usuario.email.toLowerCase())) {
+            return res.status(403).json({ error: 'Esta cuenta no tiene acceso administrativo' });
+        }
+        next();
+    } catch (error) {
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: 'La sesión ya no es válida' });
+        }
+        console.error('Error al validar acceso administrativo:', error.name);
+        res.status(500).json({ error: 'No se pudo validar el acceso administrativo' });
+    }
+}
+
 const CitaSchema = new mongoose.Schema({
     clienteNombre: { type: String, required: true },
     barbero: { type: String, required: true },
     servicio: { type: String, required: true },
     fecha: { type: String, required: true }, // Ej: "2026-11-20"
-    hora: { type: String, required: true }    // Ej: "14:00"
+    hora: { type: String, required: true },   // Ej: "14:00"
+    estado: { type: String, enum: ['reservada', 'realizada'], default: 'reservada' }
 });
 // Regla de oro: Evita que agenden al mismo barbero a la misma fecha y hora
 CitaSchema.index({ barbero: 1, fecha: 1, hora: 1 }, { unique: true });
@@ -146,7 +185,14 @@ app.post('/api/auth/login', async (req, res) => {
 
         // Crear token de sesión seguro
         const token = jwt.sign({ id: usuario._id }, JWT_SECRET, { expiresIn: '24h' });
-        res.json({ token, usuario: { nombre: usuario.nombre, email: usuario.email } });
+        res.json({
+            token,
+            usuario: {
+                nombre: usuario.nombre,
+                email: usuario.email,
+                esAdministrador: ADMIN_EMAILS.has(usuario.email.toLowerCase())
+            }
+        });
     } catch (error) {
         res.status(500).json({ error: 'Error en el servidor' });
     }
@@ -188,14 +234,34 @@ app.get('/api/citas/disponibilidad', async (req, res) => {
     }
 });
 
-// E. RUTA: VER TODAS LAS CITAS (Para el administrador o barberos)
-app.get('/api/citas', async (req, res) => {
+// E. RUTAS: CONSULTA Y ACTUALIZACIÓN ADMINISTRATIVA DE CITAS
+app.get('/api/citas', requireAdmin, async (req, res) => {
     try {
-        const citas = await Cita.find();
+        const citas = await Cita.find().sort({ fecha: 1, hora: 1 }).lean();
         res.json(citas);
     } catch (error) {
         console.error('Error al obtener las citas:', error.name, error.code || 'sin código');
         res.status(500).json({ error: 'Error al obtener las citas' });
+    }
+});
+
+app.patch('/api/citas/:id/estado', requireAdmin, async (req, res) => {
+    const { estado } = req.body;
+    if (!mongoose.isValidObjectId(req.params.id) || !['reservada', 'realizada'].includes(estado)) {
+        return res.status(400).json({ error: 'La cita o el estado indicados no son válidos' });
+    }
+
+    try {
+        const cita = await Cita.findByIdAndUpdate(
+            req.params.id,
+            { estado },
+            { new: true, runValidators: true }
+        ).lean();
+        if (!cita) return res.status(404).json({ error: 'No se encontró la cita' });
+        res.json(cita);
+    } catch (error) {
+        console.error('Error al actualizar el estado de la cita:', error.name, error.code || 'sin código');
+        res.status(500).json({ error: 'No se pudo actualizar la cita' });
     }
 });
 

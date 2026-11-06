@@ -1,0 +1,90 @@
+<section class="admin-page">
+  <header class="admin-head">
+    <div>
+      <p class="admin-eyebrow">CORTE STUDIO · ADMINISTRACIÓN</p>
+      <h1>Reservaciones</h1>
+      <p class="admin-intro">Consulta las próximas citas y registra los servicios que ya se realizaron.</p>
+    </div>
+    <div class="admin-actions">
+      <button class="btn btn--line" type="button" (click)="loadAppointments()" [disabled]="loading()">Actualizar</button>
+      <button class="btn btn--ink" type="button" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  @if (error()) {
+    <p class="admin-error" role="alert">{{ error() }}</p>
+  }
+
+  <section class="admin-stats" aria-label="Servicios realizados">
+    <article class="admin-stat admin-stat--total">
+      <span>Total de servicios realizados</span>
+      <strong>{{ completedCount() }}</strong>
+    </article>
+    @for (barber of barberCounts(); track barber.name) {
+      <article class="admin-stat">
+        <span>{{ barber.name }}</span>
+        <strong>{{ barber.count }}</strong>
+        <small>servicios realizados</small>
+      </article>
+    }
+  </section>
+
+  <section class="admin-bookings" aria-labelledby="admin-bookings-title">
+    <div class="admin-section-head">
+      <div>
+        <p class="admin-eyebrow">AGENDA</p>
+        <h2 id="admin-bookings-title">Todas las citas</h2>
+      </div>
+      <span class="admin-booking-count">{{ appointments().length }} reservaciones</span>
+    </div>
+
+    @if (loading()) {
+      <p class="admin-message" role="status">Cargando reservaciones…</p>
+    } @else if (appointments().length === 0) {
+      <p class="admin-message">Todavía no hay reservaciones.</p>
+    } @else {
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th scope="col">Fecha y hora</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Servicio</th>
+              <th scope="col">Barbero</th>
+              <th scope="col">Estado</th>
+              <th scope="col"><span class="visually-hidden">Acción</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (appointment of appointments(); track appointment._id) {
+              <tr>
+                <td data-label="Fecha y hora">
+                  <strong>{{ formatDate(appointment.fecha) }}</strong>
+                  <span class="admin-time">{{ appointment.hora }}</span>
+                </td>
+                <td data-label="Cliente">{{ appointment.clienteNombre }}</td>
+                <td data-label="Servicio">{{ appointment.servicio }}</td>
+                <td data-label="Barbero">{{ appointment.barbero }}</td>
+                <td data-label="Estado">
+                  <span class="admin-status" [class.admin-status--done]="appointment.estado === 'realizada'">
+                    {{ appointment.estado === 'realizada' ? 'Realizada' : 'Reservada' }}
+                  </span>
+                </td>
+                <td class="admin-row-action">
+                  <button class="admin-mark" type="button" (click)="setAppointmentStatus(appointment)"
+                    [disabled]="updatingId() === appointment._id">
+                    @if (updatingId() === appointment._id) {
+                      Guardando…
+                    } @else {
+                      {{ appointment.estado === 'realizada' ? 'Deshacer' : 'Marcar realizada' }}
+                    }
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</section>
