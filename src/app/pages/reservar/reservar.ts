@@ -29,6 +29,7 @@ export class Reservar {
   loadingAppointments = signal(false);
   appointmentsError = signal('');
   bookingError = signal('');
+  calendarWarning = signal('');
   occupiedTimes = signal<string[]>([]);
   serviceId = signal<string | null>(null);
   barberId = signal<string | null>(null);
@@ -132,8 +133,12 @@ export class Reservar {
       fecha: day.date,
       hora: time
     }).subscribe({
-      next: () => {
+      next: response => {
         this.confirmed.set(true);
+        if (!response.notificacionCalendar?.enviada) {
+          this.calendarWarning.set(response.notificacionCalendar?.mensaje
+            ?? 'El servidor no confirmó el envío de la invitación de Google Calendar.');
+        }
         this.submitting.set(false);
       },
       error: (error: HttpErrorResponse) => {

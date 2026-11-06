@@ -6,6 +6,7 @@ export const API_BASE_URL = 'https://corte-studio-xua5.onrender.com/api';
 
 export interface ApiMessage {
   mensaje: string;
+  notificacionCalendar?: { enviada: boolean; mensaje: string };
 }
 
 export interface LoginResponse {

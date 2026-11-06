@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { google } = require('googleapis');
 require('dotenv').config();
 
 const app = express();
@@ -36,6 +37,64 @@ const CitaSchema = new mongoose.Schema({
 // Regla de oro: Evita que agenden al mismo barbero a la misma fecha y hora
 CitaSchema.index({ barbero: 1, fecha: 1, hora: 1 }, { unique: true });
 const Cita = mongoose.model('Cita', CitaSchema);
+
+const BARBER_EMAIL_KEYS = {
+    'Samuel Bolaños': 'samuel',
+    'Luis David Jimenes': 'luis',
+    'Johan Rojas': 'johan'
+};
+const SERVICE_DURATIONS = {
+    'Corte clásico': 40,
+    'Corte degradado': 50,
+    'Corte y barba': 75,
+    'Arreglo de barba': 30,
+    'Diseño y asesoría de estilo': 60
+};
+
+async function sendCalendarInvitation(cita) {
+    const { GOOGLE_CALENDAR_ID, GOOGLE_SERVICE_ACCOUNT_JSON, BARBER_EMAILS_JSON } = process.env;
+    if (!GOOGLE_CALENDAR_ID || !GOOGLE_SERVICE_ACCOUNT_JSON || !BARBER_EMAILS_JSON) {
+        return { enviada: false, mensaje: 'Google Calendar aún no está configurado en el servidor.' };
+    }
+
+    try {
+        const credentials = JSON.parse(GOOGLE_SERVICE_ACCOUNT_JSON);
+        const barberEmails = JSON.parse(BARBER_EMAILS_JSON);
+        const emailKey = BARBER_EMAIL_KEYS[cita.barbero];
+        const barberEmail = emailKey && barberEmails[emailKey];
+        const duration = SERVICE_DURATIONS[cita.servicio];
+        if (!barberEmail || !duration) {
+            console.error('Falta el correo del barbero o la duración del servicio para la invitación de Calendar.');
+            return { enviada: false, mensaje: 'No se pudo identificar al barbero o la duración para enviar la invitación.' };
+        }
+
+        const start = new Date(`${cita.fecha}T${cita.hora}:00-05:00`);
+        if (Number.isNaN(start.getTime())) {
+            return { enviada: false, mensaje: 'La fecha u hora de la cita no es válida para Google Calendar.' };
+        }
+        const end = new Date(start.getTime() + duration * 60_000);
+        const auth = new google.auth.GoogleAuth({
+            credentials,
+            scopes: ['https://www.googleapis.com/auth/calendar']
+        });
+        const calendar = google.calendar({ version: 'v3', auth });
+        await calendar.events.insert({
+            calendarId: GOOGLE_CALENDAR_ID,
+            sendUpdates: 'all',
+            requestBody: {
+                summary: `${cita.servicio} con ${cita.barbero}`,
+                description: `Cita de ${cita.clienteNombre} en EL BORO BARBER SHOP.`,
+                start: { dateTime: start.toISOString(), timeZone: 'America/Bogota' },
+                end: { dateTime: end.toISOString(), timeZone: 'America/Bogota' },
+                attendees: [{ email: barberEmail }]
+            }
+        });
+        return { enviada: true, mensaje: `Invitación enviada a ${barberEmail}.` };
+    } catch (error) {
+        console.error('No se pudo enviar la invitación de Google Calendar:', error.message);
+        return { enviada: false, mensaje: 'La cita quedó guardada, pero no se pudo enviar la invitación de Google Calendar.' };
+    }
+}
 
 
 // 3. RUTAS DEL SISTEMA (API ENDPOINTS)
@@ -99,7 +158,8 @@ app.post('/api/citas/agendar', async (req, res) => {
         const { clienteNombre, barbero, servicio, fecha, hora } = req.body;
         const nuevaCita = new Cita({ clienteNombre, barbero, servicio, fecha, hora });
         await nuevaCita.save();
-        res.status(201).json({ mensaje: '¡Cita agendada con éxito!', cita: nuevaCita });
+        const notificacionCalendar = await sendCalendarInvitation(nuevaCita);
+        res.status(201).json({ mensaje: '¡Cita agendada con éxito!', cita: nuevaCita, notificacionCalendar });
     } catch (error) {
         if (error.code === 11000) {
             return res.status(409).json({ error: 'Ese horario ya está ocupado por otro cliente con ese barbero' });

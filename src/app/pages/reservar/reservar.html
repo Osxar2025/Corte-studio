@@ -18,6 +18,11 @@
           <h2>Cita confirmada</h2>
           <p>{{ service()?.name }} con {{ barber()?.name }}, el {{ days[dayIndex()!].long }} a las {{ time() }}.</p>
           <p class="muted">Tu cita quedó registrada correctamente.</p>
+          @if (calendarWarning()) {
+            <p class="err" role="status">{{ calendarWarning() }}</p>
+          } @else {
+            <p class="muted" role="status">La invitación de Google Calendar se envió al barbero.</p>
+          }
           <a routerLink="/" class="btn btn--ink">Volver al inicio</a>
         </div>
       } @else {
