@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
-export const API_BASE_URL = 'http://localhost:3000/api';
+export const API_BASE_URL = 'https://corte-studio-xua5.onrender.com';
 
 export interface ApiMessage {
   mensaje: string;
