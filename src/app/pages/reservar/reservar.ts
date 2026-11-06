@@ -73,9 +73,13 @@ export class Reservar {
           this.loadingAppointments.set(false);
         }
       },
-      error: () => {
+      error: (error: HttpErrorResponse) => {
         if (this.dayIndex() !== null && this.days[this.dayIndex()!].date === day.date && this.barber()?.name === barber.name) {
-          this.appointmentsError.set('No se pudieron cargar los horarios. Comprueba que la API esté encendida e inténtalo de nuevo.');
+          this.appointmentsError.set(error.status === 0
+            ? 'No se pudo conectar con la API. Comprueba que esté disponible e inténtalo de nuevo.'
+            : error.status >= 500
+              ? 'La API está activa, pero no pudo consultar los horarios. Revisa el estado de la base de datos del servidor.'
+              : 'No se pudieron cargar los horarios. Inténtalo de nuevo.');
           this.loadingAppointments.set(false);
         }
       }

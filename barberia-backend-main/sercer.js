@@ -18,10 +18,6 @@ if (!MONGO_URI || !JWT_SECRET) {
     console.error('❌ Configura MONGO_URI y JWT_SECRET en el archivo .env.');
     process.exit(1);
 }
-mongoose.connect(MONGO_URI)
-    .then(() => console.log('🚀 ¡Conexión exitosa a MongoDB Atlas!'))
-    .catch((error) => console.error('❌ Error al conectar a MongoDB:', error));
-
 // 2. MODELOS DE LA BASE DE DATOS (Se crean solos en MongoDB)
 const UserSchema = new mongoose.Schema({
     nombre: { type: String, required: true },
@@ -47,6 +43,21 @@ const Cita = mongoose.model('Cita', CitaSchema);
 // Ruta de prueba inicial
 app.get('/', (req, res) => {
     res.send('Servidor de la Barbería en línea y funcionando.');
+});
+
+app.get('/api/health', (req, res) => {
+    const databaseConnected = mongoose.connection.readyState === 1;
+    res.status(databaseConnected ? 200 : 503).json({
+        api: 'online',
+        database: databaseConnected ? 'connected' : 'disconnected'
+    });
+});
+
+app.use('/api', (req, res, next) => {
+    if (mongoose.connection.readyState !== 1) {
+        return res.status(503).json({ error: 'La base de datos no está disponible' });
+    }
+    next();
 });
 
 // A. RUTA: REGISTRO DE USUARIOS
@@ -90,7 +101,14 @@ app.post('/api/citas/agendar', async (req, res) => {
         await nuevaCita.save();
         res.status(201).json({ mensaje: '¡Cita agendada con éxito!', cita: nuevaCita });
     } catch (error) {
-        res.status(400).json({ error: 'Ese horario ya está ocupado por otro cliente con ese barbero' });
+        if (error.code === 11000) {
+            return res.status(409).json({ error: 'Ese horario ya está ocupado por otro cliente con ese barbero' });
+        }
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ error: 'Los datos de la cita no son válidos' });
+        }
+        console.error('Error al guardar la cita:', error.name, error.code || 'sin código');
+        res.status(500).json({ error: 'No se pudo guardar la cita' });
     }
 });
 
@@ -105,6 +123,7 @@ app.get('/api/citas/disponibilidad', async (req, res) => {
         const citas = await Cita.find({ fecha, barbero }).select('hora -_id').lean();
         res.json({ horariosOcupados: citas.map((cita) => cita.hora) });
     } catch (error) {
+        console.error('Error al consultar disponibilidad:', error.name, error.code || 'sin código');
         res.status(500).json({ error: 'Error al consultar la disponibilidad' });
     }
 });
@@ -115,6 +134,7 @@ app.get('/api/citas', async (req, res) => {
         const citas = await Cita.find();
         res.json(citas);
     } catch (error) {
+        console.error('Error al obtener las citas:', error.name, error.code || 'sin código');
         res.status(500).json({ error: 'Error al obtener las citas' });
     }
 });
@@ -122,6 +142,14 @@ app.get('/api/citas', async (req, res) => {
 
 // 4. PUERTO DINÁMICO PARA RENDER
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`🌍 Servidor escuchando en el puerto ${PORT}`);
-});
+mongoose.connect(MONGO_URI)
+    .then(() => {
+        console.log('🚀 ¡Conexión exitosa a MongoDB Atlas!');
+        app.listen(PORT, () => {
+            console.log(`🌍 Servidor escuchando en el puerto ${PORT}`);
+        });
+    })
+    .catch((error) => {
+        console.error('❌ No se puede iniciar la API sin MongoDB:', error.message);
+        process.exit(1);
+    });
