@@ -10,6 +10,7 @@ import { Photo } from '../../shared/photo';
   templateUrl: './home.html'
 })
 export class Home {
+  heroPhoto = 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=1200&q=85';
   services = DEMO_SERVICES;
   barbers = DEMO_BARBERS;
   fmt = formatCOP;

@@ -6,7 +6,7 @@
   </h1>
 
   <div class="hero__art">
-    <app-photo class="hero__photo" label="Foto editorial · degradado contemporáneo" tone="sand" />
+    <app-photo class="hero__photo" label="Interior de barbería" tone="sand" [src]="heroPhoto" />
     <span class="hero__tag">Edición 2026</span>
     <svg class="stamp" viewBox="0 0 100 100" role="img" aria-label="Corte, barba, estilo, precisión">
       <circle cx="50" cy="50" r="50" fill="var(--blue)" />
@@ -72,7 +72,7 @@
   <div class="barber-row">
     @for (b of barbers; track b.id; let i = $index) {
       <article class="barber barber--{{ i + 1 }}">
-        <app-photo class="barber__photo" [label]="b.photoLabel" [tone]="i === 1 ? 'wine' : i === 2 ? 'blue' : 'sand'" />
+        <app-photo class="barber__photo" [label]="b.photoLabel" [src]="b.photoSrc" />
         <span class="barber__tag">{{ b.specialty }}</span>
         <h3>{{ b.name }}</h3>
         <p>{{ b.bio }}</p>

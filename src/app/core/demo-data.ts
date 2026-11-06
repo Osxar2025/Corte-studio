@@ -1,6 +1,6 @@
 /** CONTENIDO DE DEMOSTRACIÓN. Reemplazar por datos reales cuando exista el backend. */
 export interface Service { id: string; name: string; description: string; minutes: number; price: number; }
-export interface Barber { id: string; name: string; specialty: string; bio: string; photoLabel: string; }
+export interface Barber { id: string; name: string; specialty: string; bio: string; photoLabel: string; photoSrc: string; }
 
 export const DEMO_SERVICES: Service[] = [
   { id: 'clasico', name: 'Corte clásico', minutes: 40, price: 35000, description: 'Tijera y máquina con acabado limpio. Lo que pidas, bien hecho, con la toalla caliente de rigor.' },
@@ -11,9 +11,9 @@ export const DEMO_SERVICES: Service[] = [
 ];
 
 export const DEMO_BARBERS: Barber[] = [
-  { id: 'mateo', name: 'Mateo Rivas', specialty: 'Degradados', bio: 'Doce años afinando transiciones. Prefiere pocas palabras y líneas exactas.', photoLabel: 'Retrato vertical · Mateo' },
-  { id: 'camila', name: 'Camila Ortega', specialty: 'Diseño y textura', bio: 'Trabaja el cabello como material: corte seco, textura y estilos que se sostienen solos.', photoLabel: 'Retrato vertical · Camila' },
-  { id: 'andres', name: 'Andrés Beltrán', specialty: 'Barba y navaja', bio: 'Maestro de la navaja. Sus perfilados duran la semana entera.', photoLabel: 'Retrato vertical · Andrés' }
+  { id: 'mateo', name: 'Samuel Bolano', specialty: 'Degradados', bio: 'Doce años afinando transiciones. Prefiere pocas palabras y líneas exactas.', photoLabel: 'Retrato de Mateo Rivas', photoSrc: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=85' },
+  { id: 'camila', name: 'Luis David Jimenes', specialty: 'Diseño y textura', bio: 'Trabaja el cabello como material: corte seco, textura y estilos que se sostienen solos.', photoLabel: 'Retrato de Camila Ortega', photoSrc: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=900&q=85' },
+  { id: 'andres', name: 'Andrés Beltrán', specialty: 'Barba y navaja', bio: 'Maestro de la navaja. Sus perfilados duran la semana entera.', photoLabel: 'Retrato de Andrés Beltrán', photoSrc: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=900&q=85' }
 ];
 
 export const DEMO_TIMES = ['09:00', '10:00', '11:30', '14:00', '15:30', '17:00', '18:30'];
