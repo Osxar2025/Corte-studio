@@ -11,9 +11,9 @@ export const DEMO_SERVICES: Service[] = [
 ];
 
 export const DEMO_BARBERS: Barber[] = [
-  { id: 'mateo', name: 'Samuel Bolano', specialty: 'Degradados', bio: 'Doce años afinando transiciones. Prefiere pocas palabras y líneas exactas.', photoLabel: 'Retrato de Mateo Rivas', photoSrc: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=900&q=85' },
-  { id: 'camila', name: 'Luis David Jimenes', specialty: 'Diseño y textura', bio: 'Trabaja el cabello como material: corte seco, textura y estilos que se sostienen solos.', photoLabel: 'Retrato de Camila Ortega', photoSrc: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=900&q=85' },
-  { id: 'andres', name: 'Andrés Beltrán', specialty: 'Barba y navaja', bio: 'Maestro de la navaja. Sus perfilados duran la semana entera.', photoLabel: 'Retrato de Andrés Beltrán', photoSrc: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=900&q=85' }
+  { id: 'mateo', name: 'Samuel Bolaños', specialty: 'Degradados', bio: 'Dos años afinando estilos. Prefiere pocas palabras y líneas exactas.', photoLabel: 'Retrato de Samuel Bolaños', photoSrc: '/images/barberos/samuel.png' },
+  { id: 'camila', name: 'Luis David Jimenes', specialty: 'Diseño y textura', bio: 'Trabaja el cabello como material: corte seco, textura y estilos que se sostienen solos.', photoLabel: 'Retrato de Luis David Jimenes', photoSrc: '/images/barberos/luis.jpg' },
+  { id: 'andres', name: 'Johan Rojas', specialty: 'Barba y navaja', bio: 'Maestro de la navaja. Sus perfilados bien trabajados que destacan tu corte.', photoLabel: 'Retrato de Johan Rojas', photoSrc: '/images/barberos/johan.png' }
 ];
 
 export const DEMO_TIMES = ['09:00', '10:00', '11:30', '14:00', '15:30', '17:00', '18:30'];

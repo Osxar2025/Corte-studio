@@ -16,8 +16,8 @@ export class Home {
   fmt = formatCOP;
   active = signal(DEMO_SERVICES[0].id);
   steps = [
-    { n: '1', t: 'Elige tu servicio', d: 'Corte, barba o ambos. Ves duración y precio antes de decidir.' },
-    { n: '2', t: 'Encuentra tu barbero', d: 'Conoce su especialidad y reserva con quien mejor encaje con tu estilo.' },
+    { n: '1', t: 'Elige tu servicio', d: 'Corte, barba o ambos. Ves cuanto dura y cuanto cuesta antes de decidir.' },
+    { n: '2', t: 'Encuentra tu barbero', d: 'Conoce a tu barbero su especialidad y reserva con quien mejor encaje con tu estilo.' },
     { n: '3', t: 'Selecciona el horario', d: 'Escoge día y hora entre los espacios libres de la semana.' },
     { n: '4', t: 'Confirma tu cita', d: 'Revisa el resumen, confirma y llega a tu hora. Sin llamadas.' }
   ];
